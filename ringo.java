@@ -26,32 +26,36 @@ public class ringo {
         System.out.println("Please enter a valid type string- S/R/F");
     }
 
+    byte var = 0x00;
+    var = (byte)(0x03 << (byte)6);
+    System.out.println(var);
+    System.out.println(Integer.toBinaryString(var));
 
-    while (true) {  // Run forever, receiving and echoing datagrams
-      //create socket and packets for the desired spots and create a large empty byte array to read into
-      DatagramSocket socket = new DatagramSocket(localPort);
-      DatagramPacket packet = new DatagramPacket(new byte[255], 255);
-
-      // Receive packet from client
-      socket.receive(packet);
-
-      //get the packet into a string
-      byte[] bytes = packet.getData();
-      String output = new String(bytes);
-      System.out.println(output);
-
-      //check to make sure the string is not empty
-      if (!output.equals("")) {
-
-        // //create a new datagrampacket to send and send it
-        // DatagramPacket sendPacket = new DatagramPacket(out, out.length, packet.getAddress(), packet.getPort());
-        // socket.send(sendPacket);
-        // System.out.println("Response: " + yep);
-        // packet.setLength(out.length);
-      }
-
-      //close the socket after receiving and sending a response
-      socket.close();
-    }
+    // while (true) {  // Run forever, receiving and echoing datagrams
+    //   //create socket and packets for the desired spots and create a large empty byte array to read into
+    //   DatagramSocket socket = new DatagramSocket(localPort);
+    //   DatagramPacket packet = new DatagramPacket(new byte[255], 255);
+    //
+    //   // Receive packet from client
+    //   socket.receive(packet);
+    //
+    //   //get the packet into a string
+    //   byte[] bytes = packet.getData();
+    //   String output = new String(bytes);
+    //   System.out.println(output);
+    //
+    //   //check to make sure the string is not empty
+    //   if (!output.equals("")) {
+    //
+    //     // //create a new datagrampacket to send and send it
+    //     // DatagramPacket sendPacket = new DatagramPacket(out, out.length, packet.getAddress(), packet.getPort());
+    //     // socket.send(sendPacket);
+    //     // System.out.println("Response: " + yep);
+    //     // packet.setLength(out.length);
+    //   }
+    //
+    //   //close the socket after receiving and sending a response
+    //   socket.close();
+    // }
   }
 }
