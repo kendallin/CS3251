@@ -6,10 +6,11 @@ import java.lang.Byte;
 //HELPFUL FUNCTIONS
 // Byte.toUnsignedInt(*byte b*) outputs the unsigned numbers
 //
-private static final int TIMEOUT = 2000;   // Resend timeout (milliseconds)
-private static final int MAXTRIES = 5;     // Maximum retransmissions
 
 public class ringo {
+  private static final int TIMEOUT = 2000;   // Resend timeout (milliseconds)
+  private static final int MAXTRIES = 5;     // Maximum retransmissions
+
   int port;
   int totalRingos;
   InetAddress localHost;
@@ -34,30 +35,33 @@ public class ringo {
     int pocPort = Integer.parseInt(args[3]);
     int n = Integer.parseInt(args[4]);
 
-    int type = -1;
+    ringo ri = new ringo(localPort, n);
+
+    int t = -1;
     switch(type) {
       case "S":
         sender s = new sender();
-        type = 0;
+        t = 0;
         break;
       case "R":
         receiver r = new receiver();
-        type = 1;
+        t = 1;
         break;
       case "F":
         forwarder f = new forwarder();
-        type = 2;
+        t = 2;
         break;
       default:
         System.out.println("Please enter a valid type string- S/R/F");
     }
 
-    if (type == 0) {
+    if (t == 0) {
       DatagramSocket socket = new DatagramSocket();
       socket.setSoTimeout(TIMEOUT);  // Maximum receive blocking time (milliseconds)
 
       // get bytes parsed and then create send and receive packets
-      Byte[] bytesToSend = keepAlive(1, pocName)
+      byte[] bytesToSend = ri.keepAlive(1, pocName);
+
       DatagramPacket sendPacket = new DatagramPacket(bytesToSend, bytesToSend.length, pocName, pocPort);
       DatagramPacket receivePacket = new DatagramPacket(new byte[bytesToSend.length], bytesToSend.length);
 
@@ -68,7 +72,7 @@ public class ringo {
         try {
           socket.receive(receivePacket);  // Attempt echo reply reception
 
-          if (!receivePacket.getAddress().equals(serverAddress))  // Check source
+          if (!receivePacket.getAddress().equals(pocName))  // Check source
             throw new IOException("Received packet from an unknown source");
 
           receivedResponse = true;
@@ -80,7 +84,7 @@ public class ringo {
 
       //handle outcomes of response
       if (receivedResponse) {
-        response = new String(receivePacket.getData());
+        String response = new String(receivePacket.getData());
       } else {
         System.out.println("No response -- giving up.");
       }
@@ -97,7 +101,7 @@ public class ringo {
         socket.receive(packet);
 
         //get the packet into a string
-        Byte[] bytes = packet.getData();
+        byte[] bytes = packet.getData();
         String output = new String(bytes);
         System.out.println(output);
 
@@ -105,10 +109,9 @@ public class ringo {
         if (!output.equals("")) {
 
           //create a new datagrampacket to send and send it
-          DatagramPacket sendPacket = new DatagramPacket(out, out.length, packet.getAddress(), packet.getPort());
+          DatagramPacket sendPacket = new DatagramPacket(bytes, output.length(), packet.getAddress(), packet.getPort());
           socket.send(sendPacket);
-          System.out.println("Response: " + yep);
-          packet.setLength(out.length);
+          packet.setLength(output.length());
         }
 
         //close the socket after receiving and sending a response
@@ -124,73 +127,73 @@ public class ringo {
     String m = "m";
     byte sf = (byte) 0x01;
 
-    ringo ri = new ringo(localPort, n);
 
-    Byte[] maybe = ri.dataHeader(sf, 1, 1, pocName, m);
+
+    byte[] maybe = ri.dataHeader(sf, 1, 1, pocName, m);
   }
 
-  private Byte[] dataHeader(byte type, int ack, int end, InetAddress rec, String data) {
+  private byte[] dataHeader(byte t, int ack, int end, InetAddress rec, String data) {
     //create list used for pushing byte arrays on
-    ArrayList<Byte> alist = new ArrayList<>();
+    byte[] alist = new byte[14];
 
-    byte mta = (byte)(type << 6);
+    byte mta = (byte)(t << 6);
     if (ack == 1) {
       mta = (byte) (mta ^ (0x01 << 0x05));
     }
-    alist.add(new Byte(mta));
+    alist[0] = mta;
 
     byte zeroEnd = 0x00;
     if (end == 1) {
       zeroEnd = (byte) (zeroEnd ^ (0x01));
     }
-    alist.add(new Byte(zeroEnd));
+    alist[1] = zeroEnd;
 
     alist = addressMaker(localHost, alist);
     alist = addressMaker(rec, alist);
 
-    alist.add(new Byte((byte)0x00));
-    alist.add(new Byte((byte)0x00));
-    alist.add(new Byte((byte)0x00));
-    alist.add(new Byte((byte)0x00));
+    alist[2] = (byte)0x00;
+    alist[3] = (byte)0x00;
+    alist[4] = (byte)0x00;
+    alist[5] = (byte)0x00;
 
-    alist.add(checksum(alist));
+    alist[6] = checksum(alist);
 
-    Byte[] ret = alist.toArray(new Byte[alist.size()]);
 
-    return ret;
+    return alist;
   }
 
-  private Byte[] keepAlive(int startup, InetAddress rec) {
-    ArrayList<Byte> alist = new ArrayList<>();
-    byte type = 0x02;
-    byte mta = (byte)(type << 6);
+  private byte[] keepAlive(int startup, InetAddress rec) {
+    byte[] alist = new byte[9];
+    byte t = 0x02;
+    byte mta = (byte)(t << 6);
     if (startup == 1) {
       mta = (byte) (mta ^ (0x01 << 0x05));
     }
-    alist.add(new Byte(mta));
+    alist[0] = mta;
 
     alist = addressMaker(localHost, alist);
     alist = addressMaker(rec, alist);
 
-    Byte[] ret = alist.toArray(new Byte[alist.size()]);
 
-    return ret;
+    return alist;
   }
 
-  private ArrayList<Byte> addressMaker(InetAddress add, ArrayList<Byte> alist) {
+  private byte[] addressMaker(InetAddress add, byte[] alist) {
     byte[] a = add.getAddress();
+    int count = 0;
     for(byte b: a) {
-      Byte h = new Byte((byte) (b & 0xFF));
-      alist.add(h);
+      byte h = new Byte((byte) (b & 0xFF));
+      alist[count] = h;
+      count++;
     }
     return alist;
   }
 
-  private Byte checksum(ArrayList<Byte> alist) {
+  private byte checksum(byte[] alist) {
      byte cS = 0x00;
-     for (Byte b: alist) {
+     for (byte b: alist) {
        cS ^= b;
      }
-     return new Byte(cS);
+     return cS;
   }
 }
