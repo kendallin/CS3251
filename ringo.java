@@ -106,8 +106,7 @@ public class ringo {
 
         //get the packet into a string
         byte[] bytes = packet.getData();
-        String output = new String(bytes);
-        System.out.println(output);
+        byte[] output = ri.keepAlive(1, pocName);
         for (byte y : bytes) {
           System.out.println(Byte.toUnsignedInt(y));
         }
@@ -116,9 +115,9 @@ public class ringo {
         if (!output.equals("")) {
 
           //create a new datagrampacket to send and send it
-          DatagramPacket sendPacket = new DatagramPacket(bytes, output.length(), packet.getAddress(), packet.getPort());
+          DatagramPacket sendPacket = new DatagramPacket(bytes, output.length, packet.getAddress(), packet.getPort());
           socket.send(sendPacket);
-          packet.setLength(output.length());
+          packet.setLength(output.length);
         }
 
         //close the socket after receiving and sending a response
@@ -187,9 +186,6 @@ public class ringo {
     for (byte br : brx) {
       alist[i++] = br;
     }
-
-
-
     return alist;
   }
 
