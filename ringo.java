@@ -14,6 +14,9 @@ public class ringo {
   int port;
   int totalRingos;
   InetAddress localHost;
+  ArrayList<Integer> ports = new ArrayList<>();
+  ArrayList<InetAddress> addresses = new ArrayList<>();
+  ArrayList<Long> rttList = new ArrayList<>(); // change to int??
 
 
   public ringo(int localPort, int totalRingos) {
@@ -34,9 +37,7 @@ public class ringo {
     InetAddress pocName = InetAddress.getByName(args[2]);
     int pocPort = Integer.parseInt(args[3]);
     int n = Integer.parseInt(args[4]);
-    ArrayList<Integer> ports = new ArrayList<>();
-    ArrayList<InetAddress> addresses = new ArrayList<>();
-    ArrayList<Long> rttList = new ArrayList<>(); // change to int??
+
 
     ringo ri = new ringo(localPort, n);
 
@@ -59,49 +60,10 @@ public class ringo {
     }
 
     if (t == 0) {
-      ri.packetSender(localPort, pocName, pocPort, ports, addresses, rttList, ri);
+      ri.packetSender(localPort, pocName, pocPort, ri);
+      ri.listen(localPort, pocName, pocPort, ri, t);
     } else {
-      while (true) {  // Run forever, receiving and echoing datagrams
-        //create socket and packets for the desired spots and create a large empty byte array to read into
-        DatagramSocket socket = new DatagramSocket(localPort);
-        DatagramPacket packet = new DatagramPacket(new byte[255], 255);
-
-        // Receive packet from client
-        socket.receive(packet);
-
-        //get the packet into a string
-        byte[] bytes = packet.getData();
-        byte[] output = ri.keepAlive(1, pocName);
-        for (byte y : bytes) {
-          System.out.println(Byte.toUnsignedInt(y));
-        }
-
-        int tell = Byte.toUnsignedInt(bytes[0]);
-        System.out.println("HEADER TYPE: ");
-        if (tell >= 192) {
-          System.out.println("ACK");
-        } else if (tell >= 128) {
-          System.out.println("KEEP ALIVE");
-        } else if (tell >= 64) {
-          System.out.println("RTT");
-        } else if (tell >= 0) {
-          System.out.println("DATA");
-        }
-
-        //check to make sure the string is not empty
-        if (!output.equals("")) {
-
-          //create a new datagrampacket to send and send it
-          DatagramPacket sendPacket = new DatagramPacket(bytes, output.length, packet.getAddress(), packet.getPort());
-          socket.send(sendPacket);
-          packet.setLength(output.length);
-          ri.packetSender(localPort, pocName, pocPort, ports, addresses, rttList, ri);
-        }
-
-        //close the socket after receiving and sending a response
-        socket.close();
-        // call send to POC
-      }
+      ri.listen(localPort, pocName, pocPort, ri, t);
     }
 
     // int var = 1;
@@ -112,13 +74,9 @@ public class ringo {
     //String m = "m";
     //byte sf = (byte) 0x01;
 
-
-
   }
 
-  private void packetSender(int localPort, InetAddress pocName, int pocPort,
-    ArrayList<Integer> ports, ArrayList<InetAddress> addresses,
-    ArrayList<Long> rttList, ringo ri) throws IOException {
+  private void packetSender(int localPort, InetAddress pocName, int pocPort, ringo ri) throws IOException {
     DatagramSocket socket = new DatagramSocket();
     socket.setSoTimeout(TIMEOUT);  // Maximum receive blocking time (milliseconds)
 
@@ -134,7 +92,8 @@ public class ringo {
 
     int tries = 0;      // Packets may be lost, so we have to keep trying
     boolean receivedResponse = false; //check to see if a response has been received
-    long rtt = 0;
+    long elapsed = 0;
+    double rtt = 0;
     do {
       socket.send(sendPacket);          // Send the echo string
 
@@ -147,8 +106,9 @@ public class ringo {
 
         receivedResponse = true;
         long lEndTime = System.nanoTime();
-        rtt = lEndTime - lStartTime; // cant find RTT outside of do
-        System.out.println("RTT in milliseconds: " + rtt / 1000000);
+        elapsed = lEndTime - lStartTime; // cant find RTT outside of do
+        rtt = (double)elapsedTime / 1000000.0;
+        System.out.println("RTT in milliseconds: " + rtt);
 
       } catch (InterruptedIOException e) {  // We did not get anything so start to increment the tries counter
         tries += 1;
@@ -178,6 +138,52 @@ public class ringo {
     // close socket
     socket.close();
   }
+
+  private void listen(int localPort, InetAddress pocName, int pocPort, ringo ri, int t) throws IOException {
+    while (true) {  // Run forever, receiving and echoing datagrams
+      //create socket and packets for the desired spots and create a large empty byte array to read into
+      DatagramSocket socket = new DatagramSocket(localPort);
+      DatagramPacket packet = new DatagramPacket(new byte[255], 255);
+
+      // Receive packet from client
+      socket.receive(packet);
+
+      //get the packet into a string
+      byte[] bytes = packet.getData();
+      byte[] output = ri.keepAlive(1, pocName);
+      //for (byte y : bytes) {
+        //System.out.println(Byte.toUnsignedInt(y));
+      //}
+
+      int tell = Byte.toUnsignedInt(bytes[0]);
+      System.out.println("HEADER TYPE: ");
+      if (tell >= 192) {
+        System.out.println("ACK");
+      } else if (tell >= 128) {
+        System.out.println("KEEP ALIVE");
+      } else if (tell >= 64) {
+        System.out.println("RTT");
+      } else if (tell >= 0) {
+        System.out.println("DATA");
+      }
+
+      //check to make sure the string is not empty
+      if (!output.equals("")) {
+
+        //create a new datagrampacket to send and send it
+        DatagramPacket sendPacket = new DatagramPacket(bytes, output.length, packet.getAddress(), packet.getPort());
+        socket.send(sendPacket);
+        packet.setLength(output.length);
+      }
+      if (t != 0) {
+        System.out.println("calling packetsender");
+        ri.packetSender(localPort, pocName, pocPort, ri);
+      }
+      socket.close();
+    }
+  }
+
+
 
   private byte[] dataHeader(byte t, int ack, int end, InetAddress rec, String data) {
     //create list used for pushing byte arrays on
