@@ -61,6 +61,10 @@ public class ringo {
 
       // get bytes parsed and then create send and receive packets
       byte[] bytesToSend = ri.keepAlive(1, pocName);
+      for (byte x : bytesToSend) {
+        System.out.println(Byte.toUnsignedInt(x));
+      }
+
 
       DatagramPacket sendPacket = new DatagramPacket(bytesToSend, bytesToSend.length, pocName, pocPort);
       DatagramPacket receivePacket = new DatagramPacket(new byte[bytesToSend.length], bytesToSend.length);
@@ -104,6 +108,9 @@ public class ringo {
         byte[] bytes = packet.getData();
         String output = new String(bytes);
         System.out.println(output);
+        for (byte y : bytes) {
+          System.out.println(Byte.toUnsignedInt(y));
+        }
 
         //check to make sure the string is not empty
         if (!output.equals("")) {
@@ -129,12 +136,11 @@ public class ringo {
 
 
 
-    byte[] maybe = ri.dataHeader(sf, 1, 1, pocName, m);
   }
 
   private byte[] dataHeader(byte t, int ack, int end, InetAddress rec, String data) {
     //create list used for pushing byte arrays on
-    byte[] alist = new byte[14];
+    byte[] alist = new byte[15];
 
     byte mta = (byte)(t << 6);
     if (ack == 1) {
@@ -151,12 +157,12 @@ public class ringo {
     alist = addressMaker(localHost, alist);
     alist = addressMaker(rec, alist);
 
-    alist[2] = (byte)0x00;
-    alist[3] = (byte)0x00;
-    alist[4] = (byte)0x00;
-    alist[5] = (byte)0x00;
+    alist[10] = (byte)0x00;
+    alist[11] = (byte)0x00;
+    alist[12] = (byte)0x00;
+    alist[13] = (byte)0x00;
 
-    alist[6] = checksum(alist);
+    alist[14] = checksum(alist);
 
 
     return alist;
@@ -171,8 +177,17 @@ public class ringo {
     }
     alist[0] = mta;
 
-    alist = addressMaker(localHost, alist);
-    alist = addressMaker(rec, alist);
+    byte[] bmx = addressMaker(localHost, alist);
+    int i = 1;
+    for (byte bx: bmx) {
+      alist[i++] = bx;
+    }
+
+    byte[] brx = addressMaker(rec, alist);
+    for (byte br : brx) {
+      alist[i++] = br;
+    }
+
 
 
     return alist;
@@ -180,13 +195,7 @@ public class ringo {
 
   private byte[] addressMaker(InetAddress add, byte[] alist) {
     byte[] a = add.getAddress();
-    int count = 0;
-    for(byte b: a) {
-      byte h = new Byte((byte) (b & 0xFF));
-      alist[count] = h;
-      count++;
-    }
-    return alist;
+    return a;
   }
 
   private byte checksum(byte[] alist) {
