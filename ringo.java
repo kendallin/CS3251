@@ -34,6 +34,9 @@ public class ringo {
     InetAddress pocName = InetAddress.getByName(args[2]);
     int pocPort = Integer.parseInt(args[3]);
     int n = Integer.parseInt(args[4]);
+    ArrayList<Integer> ports = new ArrayList<>();
+    ArrayList<InetAddress> addresses = new ArrayList<>();
+    ArrayList<Long> rttList = new ArrayList<>(); // change to int??
 
     ringo ri = new ringo(localPort, n);
 
@@ -56,45 +59,7 @@ public class ringo {
     }
 
     if (t == 0) {
-      DatagramSocket socket = new DatagramSocket();
-      socket.setSoTimeout(TIMEOUT);  // Maximum receive blocking time (milliseconds)
-
-      // get bytes parsed and then create send and receive packets
-      byte[] bytesToSend = ri.keepAlive(1, pocName);
-      for (byte x : bytesToSend) {
-        System.out.println(Byte.toUnsignedInt(x));
-      }
-
-
-      DatagramPacket sendPacket = new DatagramPacket(bytesToSend, bytesToSend.length, pocName, pocPort);
-      DatagramPacket receivePacket = new DatagramPacket(new byte[bytesToSend.length], bytesToSend.length);
-
-      int tries = 0;      // Packets may be lost, so we have to keep trying
-      boolean receivedResponse = false; //check to see if a response has been received
-      do {
-        socket.send(sendPacket);          // Send the echo string
-        try {
-          socket.receive(receivePacket);  // Attempt echo reply reception
-
-          if (!receivePacket.getAddress().equals(pocName))  // Check source
-            throw new IOException("Received packet from an unknown source");
-
-          receivedResponse = true;
-        } catch (InterruptedIOException e) {  // We did not get anything so start to increment the tries counter
-          tries += 1;
-          System.out.println("Timed out, " + (MAXTRIES-tries) + " more tries...");
-        }
-      } while ((!receivedResponse) && (tries < MAXTRIES));
-
-      //handle outcomes of response
-      if (receivedResponse) {
-        String response = new String(receivePacket.getData());
-      } else {
-        System.out.println("No response -- giving up.");
-      }
-
-      // close socket
-      socket.close();
+      ri.packetSender(localPort, pocName, pocPort, ports, addresses, rttList, ri);
     } else {
       while (true) {  // Run forever, receiving and echoing datagrams
         //create socket and packets for the desired spots and create a large empty byte array to read into
@@ -111,6 +76,18 @@ public class ringo {
           System.out.println(Byte.toUnsignedInt(y));
         }
 
+        int tell = Byte.toUnsignedInt(bytes[0]);
+        System.out.println("HEADER TYPE: ");
+        if (tell >= 192) {
+          System.out.println("ACK");
+        } else if (tell >= 128) {
+          System.out.println("KEEP ALIVE");
+        } else if (tell >= 64) {
+          System.out.println("RTT");
+        } else if (tell >= 0) {
+          System.out.println("DATA");
+        }
+
         //check to make sure the string is not empty
         if (!output.equals("")) {
 
@@ -118,10 +95,12 @@ public class ringo {
           DatagramPacket sendPacket = new DatagramPacket(bytes, output.length, packet.getAddress(), packet.getPort());
           socket.send(sendPacket);
           packet.setLength(output.length);
+          ri.packetSender(localPort, pocName, pocPort, ports, addresses, rttList, ri);
         }
 
         //close the socket after receiving and sending a response
         socket.close();
+        // call send to POC
       }
     }
 
@@ -130,11 +109,74 @@ public class ringo {
     // System.out.println(var);
     // System.out.println(Integer.toBinaryString(var));
 
-    String m = "m";
-    byte sf = (byte) 0x01;
+    //String m = "m";
+    //byte sf = (byte) 0x01;
 
 
 
+  }
+
+  private void packetSender(int localPort, InetAddress pocName, int pocPort,
+    ArrayList<Integer> ports, ArrayList<InetAddress> addresses,
+    ArrayList<Long> rttList, ringo ri) throws IOException {
+    DatagramSocket socket = new DatagramSocket();
+    socket.setSoTimeout(TIMEOUT);  // Maximum receive blocking time (milliseconds)
+
+    // get bytes parsed and then create send and receive packets
+    byte[] bytesToSend = ri.keepAlive(1, pocName);
+    for (byte x : bytesToSend) {
+      System.out.println(Byte.toUnsignedInt(x));
+    }
+
+
+    DatagramPacket sendPacket = new DatagramPacket(bytesToSend, bytesToSend.length, pocName, pocPort);
+    DatagramPacket receivePacket = new DatagramPacket(new byte[bytesToSend.length], bytesToSend.length);
+
+    int tries = 0;      // Packets may be lost, so we have to keep trying
+    boolean receivedResponse = false; //check to see if a response has been received
+    long rtt = 0;
+    do {
+      socket.send(sendPacket);          // Send the echo string
+
+      long lStartTime = System.nanoTime();
+      try {
+        socket.receive(receivePacket);  // Attempt echo reply reception
+
+        if (!receivePacket.getAddress().equals(pocName))  // Check source
+          throw new IOException("Received packet from an unknown source");
+
+        receivedResponse = true;
+        long lEndTime = System.nanoTime();
+        rtt = lEndTime - lStartTime; // cant find RTT outside of do
+        System.out.println("RTT in milliseconds: " + rtt / 1000000);
+
+      } catch (InterruptedIOException e) {  // We did not get anything so start to increment the tries counter
+        tries += 1;
+        System.out.println("Timed out, " + (MAXTRIES-tries) + " more tries...");
+      }
+    } while ((!receivedResponse) && (tries < MAXTRIES));
+
+    //handle outcomes of response
+    if (receivedResponse) {
+      String response = new String(receivePacket.getData());
+      //subtract time variables
+      // set vectors for POC
+      ports.add(pocPort);
+      addresses.add(pocName);
+      rttList.add(rtt);
+
+      for (int k = 0; k < ports.size(); k++) {
+        System.out.println("port: " + ports.get(k));
+        System.out.println("address: " + addresses.get(k));
+        System.out.println("rtt: " + rttList.get(k));
+      }
+
+    } else {
+      System.out.println("No response -- giving up.");
+    }
+
+    // close socket
+    socket.close();
   }
 
   private byte[] dataHeader(byte t, int ack, int end, InetAddress rec, String data) {
