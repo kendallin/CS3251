@@ -1,0 +1,128 @@
+////////////////////////////////////////////////////////////////////////////////
+Listed is our attempts at debugging placing the vectors into the rtt array for
+the class.
+THis is a SENDERS terminal. Here we see the local host address printed at the top.
+Next all packet sends are clarified and stated. A Keep alive packet is sent to a neighbor
+and then the sender starts to listen.
+and shortly after one is received from the senders poc.
+
+Once the timeout has happened the ringo announces its done waiting and it sends an
+RTT packet with its info out. It is received (no reported errors) by both of its
+neighbors.
+
+The sender than listens again and this is where the issue arrises. An RTT is received
+by the sender and it begins to decompose it. I printed out the byte by byte values
+that are returned for the address as well as the inputs for its function, this is
+a valid loopback address (this fails on the virtual machines as well) and the method
+collapses with a null pointer. This happens everytime you try to place an RTT with
+every receipt of one.
+
+BEGIN SENDER////////////////////////////
+
+Michaels-MacBook-Pro-3:CS3251 michaelgoodell$ java ringo S 5000 localhost 5001 3
+Local Host: Michaels-MacBook-Pro-3.local/10.233.53.195
+Sending Packet to localhost/127.0.0.1 on 5001
+Listening for sockets
+Done Waiting, Sending RTT
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending Packet to /127.0.0.1 on 5002
+Listening for sockets
+Received RTT from: /10.233.53.195 on port: 5001
+127
+0
+0
+1
+java.lang.NullPointerException
+Address is wrong
+127
+0
+0
+1
+java.lang.NullPointerException
+Address is wrong
+127
+0
+0
+1
+java.lang.NullPointerException
+Address is wrong
+Received RTT from: /10.233.53.195 on port: 5002
+127
+0
+0
+1
+java.lang.NullPointerException
+Address is wrong
+127
+0
+0
+1
+java.lang.NullPointerException
+Address is wrong
+127
+0
+0
+1
+java.lang.NullPointerException
+
+
+////////////////////////////////////////////////////////////////////////////////
+Below is the receivers output. A lot of it is similar with the difference of
+going to listening first. The final two "listenings" are the two different styles.
+one for a timed listen, the other for a long one. The same issue persists with
+not being able to read in the address.
+
+BEGIN FORWARDER///////////////////////////////
+
+^CMichaels-MacBook-Pro-3:CS3251 michaelgoodell$ java ringo F 5001 localhost 5002 3
+Local Host: Michaels-MacBook-Pro-3.local/10.233.53.195
+Listening for sockets
+Sending Packet to localhost/127.0.0.1 on 5002
+Done Waiting, Waiting forever now
+Listening for sockets
+Received RTT from: /10.233.53.195 on port: 5000
+127
+0
+0
+1
+java.lang.NullPointerException
+Address is wrong
+127
+0
+0
+1
+java.lang.NullPointerException
+Address is wrong
+127
+0
+0
+1
+java.lang.NullPointerException
+Address is wrong
+Sending Packet to /127.0.0.1 on 5000
+Listening for sockets
+Received RTT from: /10.233.53.195 on port: 5002
+Sending Packet to localhost/127.0.0.1 on 5002
+Timed out, 4 more tries...
+127
+0
+0
+1
+java.lang.NullPointerException
+Address is wrong
+127
+0
+0
+1
+java.lang.NullPointerException
+Address is wrong
+127
+0
+0
+1
+java.lang.NullPointerException
+Address is wrong
+Sending Packet to localhost/127.0.0.1 on 5002
+Listening for sockets
+Listening for sockets
+^CMichaels-MacBook-Pro-3:CS3251 michaelgoodell$
