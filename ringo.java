@@ -76,7 +76,6 @@ public class ringo {
       ArrayList<Integer> ports = ri.getPorts();
       ArrayList<InetAddress> addresses = ri.getAddresses();
       for (int i = 0; i < ports.size(); i++) {
-        System.out.println(ports.get(i));
         si.packetSender(false, addresses.get(i), ports.get(i), ri);
       }
     } else {
@@ -150,7 +149,6 @@ public class ringo {
     }
     alist[1] = zeroEnd;
 
-    System.out.println("LOCAL HOST HERE " + localHost);
     byte[] bmx = addressMaker(localHost);
     int i = 2;
     for (byte bx: bmx) {

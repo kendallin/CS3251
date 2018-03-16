@@ -35,39 +35,34 @@ public class Listener {
         // Receive packet from client
         socket.receive(packet);
       } catch (java.net.SocketTimeoutException e) {
-        System.out.println(e);
         socket.close();
         break;
       }
 
-
-      //get the packet into a string
       byte[] bytes = packet.getData();
       byte[] output = ri.keepAlive(1, pocName);
 
-      System.out.println("Received packet" + packet.getAddress());
-      byte[] addR = {bytes[2], bytes[3], bytes[4], bytes[5]};
-      System.out.println(InetAddress.getByAddress(addR));
-      for (byte h : bytes) {
-        // System.out.println(h & 0xFF);
-      }
-
-      int rPort = (bytes[5]<< 7) + bytes[6];
-
-      System.out.println("PORT INFO");
-
-      System.out.println(rPort);
-      System.out.println(packet.getPort());
-      InetAddress rAddress = packet.getAddress();
-      ri.addList(rPort, rAddress, -1);
-
       int tell = Byte.toUnsignedInt(bytes[0]);
       boolean time = false;
+      boolean ka = false;
       if (tell >= 192) {
       } else if (tell >= 128) {
+        ka = true;
       } else if (tell >= 64) {
         time = true;
       } else if (tell >= 0) {
+        time = true;
+      }
+
+      int rPort;
+      if (ka) {
+        rPort = ((bytes[5] & 0xff) << 7) | (bytes[6] & 0xFF);
+        System.out.println("Received packet: " + packet.getAddress() + " on port: " + rPort);
+        ri.addList(rPort, packet.getAddress(), -1);
+      }
+      if (time) {
+        byte[] addR = {bytes[2], bytes[3], bytes[4], bytes[5]};
+        System.out.println("Received RTT from: " + InetAddress.getByAddress(addR));
       }
 
       //check to make sure the string is not empty
