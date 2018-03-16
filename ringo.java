@@ -101,7 +101,6 @@ public class ringo {
         long lEndTime = System.nanoTime();
         elapsed = lEndTime - lStartTime; // cant find RTT outside of do
         rtt = (double)elapsed / 1000000.0;
-        System.out.println("RTT in milliseconds: " + rtt);
 
       } catch (InterruptedIOException e) {  // We did not get anything so start to increment the tries counter
         tries += 1;
@@ -112,19 +111,9 @@ public class ringo {
     //handle outcomes of response
     if (receivedResponse) {
       String response = new String(receivePacket.getData());
-      int rPort = receivePacket.getPort();
-      InetAddress rAddress = receivePacket.getAddress();
-      boolean exists = false;
-      for (int p : ports) {
-        if (rPort == p) {
-          exists = true;
-        }
-      }
-      if (exists == false) {
-        ports.add(rPort);
-        addresses.add(rAddress);
-        rttList.add((double)(-1));
-      }
+      ports.add(pocPort);
+      addresses.add(pocName);
+      rttList.add(rtt);
 
     } else {
       System.out.println("No response -- giving up.");
@@ -149,6 +138,23 @@ public class ringo {
 
       // Receive packet from client
       socket.receive(packet);
+
+      int rPort = packet.getPort();
+      InetAddress rAddress = packet.getAddress();
+      boolean pExists = false;
+      boolean aExists = false;
+      if (ports.contains(rPort)) {
+        pExists = true;
+      }
+      if (addresses.contains(rAddress)) {
+        aExists = true;
+      }
+      if (pExists == false && aExists == false) {
+        ports.add(rPort);
+        System.out.println("new port!!" + rPort);
+        addresses.add(rAddress);
+        rttList.add((double)(-1));
+      }
 
       //get the packet into a string
       byte[] bytes = packet.getData();
