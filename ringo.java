@@ -8,8 +8,6 @@ import java.lang.Byte;
 //
 
 public class ringo {
-  private static final int TIMEOUT = 2000;   // Resend timeout (milliseconds)
-  private static final int MAXTRIES = 5;     // Maximum retransmissions
 
   int port;
   int totalRingos;
@@ -38,21 +36,20 @@ public class ringo {
     int pocPort = Integer.parseInt(args[3]);
     int n = Integer.parseInt(args[4]);
 
-
     ringo ri = new ringo(localPort, n);
+    Sender si = new Sender(ri);
+    Listener li = new Listener(localPort, ri, si);
+    si.setListener(li);
 
     int t = -1;
     switch(type) {
       case "S":
-        sender s = new sender();
         t = 0;
         break;
       case "R":
-        receiver r = new receiver();
         t = 1;
         break;
       case "F":
-        forwarder f = new forwarder();
         t = 2;
         break;
       default:
@@ -60,137 +57,21 @@ public class ringo {
     }
 
     if (t == 0) {
-      ri.packetSender(localPort, pocName, pocPort, ri);
-      ri.listen(localPort, pocName, pocPort, ri, t);
+      si.packetSender(true, pocName, pocPort, ri);
+      li.listen(pocName, pocPort, t);
     } else {
-      ri.listen(localPort, pocName, pocPort, ri, t);
+      li.listen(pocName, pocPort, t);
     }
     //byte sf = (byte) 0x01;
 
   }
 
-  private void packetSender(int localPort, InetAddress pocName, int pocPort, ringo ri) throws IOException {
-    DatagramSocket socket = new DatagramSocket();
-    socket.setSoTimeout(TIMEOUT);  // Maximum receive blocking time (milliseconds)
-
-    // get bytes parsed and then create send and receive packets
-    byte[] bytesToSend = ri.keepAlive(1, pocName);
-    // for (byte x : bytesToSend) {
-    //   System.out.println(Byte.toUnsignedInt(x));
-    // }
-
-
-    DatagramPacket sendPacket = new DatagramPacket(bytesToSend, bytesToSend.length, pocName, pocPort);
-    DatagramPacket receivePacket = new DatagramPacket(new byte[bytesToSend.length], bytesToSend.length);
-
-    int tries = 0;      // Packets may be lost, so we have to keep trying
-    boolean receivedResponse = false; //check to see if a response has been received
-    long elapsed = 0;
-    double rtt = 0;
-    do {
-      socket.send(sendPacket);          // Send the echo string
-
-      long lStartTime = System.nanoTime();
-      try {
-        socket.receive(receivePacket);  // Attempt echo reply reception
-
-        if (!receivePacket.getAddress().equals(pocName))  // Check source
-          throw new IOException("Received packet from an unknown source");
-
-        receivedResponse = true;
-        long lEndTime = System.nanoTime();
-        elapsed = lEndTime - lStartTime; // cant find RTT outside of do
-        rtt = (double)elapsed / 1000000.0;
-
-      } catch (InterruptedIOException e) {  // We did not get anything so start to increment the tries counter
-        tries += 1;
-        System.out.println("Timed out, " + (MAXTRIES-tries) + " more tries...");
-      }
-    } while ((!receivedResponse) && (tries < MAXTRIES));
-
-    //handle outcomes of response
-    if (receivedResponse) {
-      String response = new String(receivePacket.getData());
-      ports.add(pocPort);
-      addresses.add(pocName);
-      rttList.add(rtt);
-
-    } else {
-      System.out.println("No response -- giving up.");
-    }
-
-    for (int k = 0; k < ports.size(); k++) {
-      System.out.println("port: " + ports.get(k));
-      System.out.println("address: " + addresses.get(k));
-      System.out.println("rtt: " + rttList.get(k));
-    }
-
-    // close socket
-    socket.close();
-  }
-
-  private void listen(int localPort, InetAddress pocName, int pocPort, ringo ri, int t) throws IOException {
-    int count = 0;
-    while (true) {  // Run forever, receiving and echoing datagrams
-      //create socket and packets for the desired spots and create a large empty byte array to read into
-      DatagramSocket socket = new DatagramSocket(localPort);
-      DatagramPacket packet = new DatagramPacket(new byte[255], 255);
-
-      // Receive packet from client
-      socket.receive(packet);
-
-      int rPort = packet.getPort();
-      InetAddress rAddress = packet.getAddress();
-      boolean pExists = false;
-      boolean aExists = false;
-      if (ports.contains(rPort)) {
-        pExists = true;
-      }
-      if (addresses.contains(rAddress)) {
-        aExists = true;
-      }
-      if (pExists == false && aExists == false) {
-        ports.add(rPort);
-        System.out.println("new port!!" + rPort);
-        addresses.add(rAddress);
-        rttList.add((double)(-1));
-      }
-
-      //get the packet into a string
-      byte[] bytes = packet.getData();
-      byte[] output = ri.keepAlive(1, pocName);
-      //for (byte y : bytes) {
-        //System.out.println(Byte.toUnsignedInt(y));
-      //}
-
-      int tell = Byte.toUnsignedInt(bytes[0]);
-      System.out.println("HEADER TYPE: ");
-      if (tell >= 192) {
-        System.out.println("ACK");
-      } else if (tell >= 128) {
-        System.out.println("KEEP ALIVE");
-      } else if (tell >= 64) {
-        System.out.println("RTT");
-      } else if (tell >= 0) {
-        System.out.println("DATA");
-      }
-
-      //check to make sure the string is not empty
-      if (!output.equals("")) {
-
-        //create a new datagrampacket to send and send it
-        DatagramPacket sendPacket = new DatagramPacket(bytes, output.length, packet.getAddress(), packet.getPort());
-        socket.send(sendPacket);
-        packet.setLength(output.length);
-      }
-      if (t != 0) {
-        if (count < 3) {
-          // start rtt matrix process
-        }
-        ri.packetSender(localPort, pocName, pocPort, ri);
-        count++;
-      }
-      socket.close();
+  public void addList(Integer p, InetAddress a, Double r) {
+    if (!ports.contains(p) && !addresses.contains(a)) {
+      System.out.println("ADDING PORT: " + p + " ON ADDRESS: " + a + " WITH RTT: " + r);
+      ports.add(p);
+      addresses.add(a);
+      rttList.add(r);
     }
   }
 
@@ -208,7 +89,7 @@ public class ringo {
 // read in with inputstream put into own array or just stored as ring formation or rttmatrix
 
 
-  private byte[] dataHeader(byte t, int ack, int end, InetAddress rec, String data) {
+  public byte[] dataHeader(byte t, int ack, int end, InetAddress rec, String data) {
     //create list used for pushing byte arrays on
     byte[] alist = new byte[15];
 
@@ -238,7 +119,7 @@ public class ringo {
     return alist;
   }
 
-  private byte[] keepAlive(int startup, InetAddress rec) {
+  public byte[] keepAlive(int startup, InetAddress rec) {
     byte[] alist = new byte[9];
     byte t = 0x02;
     byte mta = (byte)(t << 6);
