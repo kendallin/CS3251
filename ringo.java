@@ -17,6 +17,7 @@ public class ringo {
   ArrayList<Integer> ports = new ArrayList<>();
   ArrayList<InetAddress> addresses = new ArrayList<>();
   ArrayList<Double> rttList = new ArrayList<>();
+  Neighbors[] neighborList = new Neighbors[4];
 
 
 
@@ -38,7 +39,7 @@ public class ringo {
     InetAddress pocName = InetAddress.getByName(args[2]);
     int pocPort = Integer.parseInt(args[3]);
     int n = Integer.parseInt(args[4]);
-    Neighbors[] neighborList = new Neighbors[n - 1];
+
 
 
     ringo ri = new ringo(localPort, n);
@@ -117,17 +118,19 @@ public class ringo {
       addresses.add(pocName);
       rttList.add(rtt);
       Neighbors neighbor = new Neighbors(pocName, pocPort, rtt);
+      neighborList[0] = neighbor;
+      //System.out.println("neighbor port: " + neighborList[0].getPort());
     } else {
       System.out.println("No response -- giving up.");
     }
 
-    System.out.println(neighborList[0]);
-    for (int k = 0; k < ports.size(); k++) {
-      System.out.println("port: " + ports.get(k));
-      System.out.println("address: " + addresses.get(k));
-      System.out.println("rtt: " + rttList.get(k));
 
-    }
+    // for (int k = 0; k < ports.size(); k++) {
+    //   System.out.println("port: " + ports.get(k));
+    //   System.out.println("address: " + addresses.get(k));
+    //   System.out.println("rtt: " + rttList.get(k));
+    //
+    // }
 
     // close socket
     socket.close();
@@ -153,10 +156,15 @@ public class ringo {
       if (addresses.contains(rAddress)) {
         aExists = true;
       }
+      System.out.println(pExists);
+      System.out.println(aExists);
       if (pExists == false && aExists == false) {
         ports.add(rPort);
+        System.out.println("new port: " + rPort);
         addresses.add(rAddress);
+        System.out.println("new address: " + rAddress);
         rttList.add((double)(-1));
+        System.out.println(-1);
       }
 
       //get the packet into a string
@@ -167,16 +175,16 @@ public class ringo {
       //}
 
       int tell = Byte.toUnsignedInt(bytes[0]);
-      System.out.println("HEADER TYPE: ");
-      if (tell >= 192) {
-        System.out.println("ACK");
-      } else if (tell >= 128) {
-        System.out.println("KEEP ALIVE");
-      } else if (tell >= 64) {
-        System.out.println("RTT");
-      } else if (tell >= 0) {
-        System.out.println("DATA");
-      }
+      // System.out.println("HEADER TYPE: ");
+      // if (tell >= 192) {
+      //   System.out.println("ACK");
+      // } else if (tell >= 128) {
+      //   System.out.println("KEEP ALIVE");
+      // } else if (tell >= 64) {
+      //   System.out.println("RTT");
+      // } else if (tell >= 0) {
+      //   System.out.println("DATA");
+      // }
 
       //check to make sure the string is not empty
       if (!output.equals("")) {
