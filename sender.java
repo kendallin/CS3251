@@ -37,7 +37,7 @@ public class sender {
     int tries = 0;      // Packets may be lost, so we have to keep trying
     boolean receivedResponse = false; //check to see if a response has been received
     long elapsed = 0;
-    double rtt = 0;
+    int rtt = 0;
     do {
       socket.send(sendPacket);          // Send the echo string
 
@@ -51,7 +51,7 @@ public class sender {
         receivedResponse = true;
         long lEndTime = System.nanoTime();
         elapsed = lEndTime - lStartTime; // cant find RTT outside of do
-        rtt = (double)elapsed / 1000000.0;
+        rtt = (int) (elapsed / 100000);
 
       } catch (InterruptedIOException e) {  // We did not get anything so start to increment the tries counter
         tries += 1;
