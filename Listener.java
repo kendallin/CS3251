@@ -52,9 +52,13 @@ public class Listener {
         // System.out.println(h & 0xFF);
       }
 
+      // int rPort = Byte.toUnsignedInt((bytes[5]<< 7) + bytes[6]);
+      int x = (int) (bytes[5] & 0xFF);
+      int y = (int) (bytes[6] & 0xFF);
+      int rPort = (x << 7) | y;
 
-      int rPort = (bytes[5]<< 7) + bytes[6];
       System.out.println("PORT INFO");
+
       System.out.println(rPort);
       System.out.println(packet.getPort());
       InetAddress rAddress = packet.getAddress();
