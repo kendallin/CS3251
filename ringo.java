@@ -15,6 +15,8 @@ public class ringo {
   ArrayList<Integer> ports = new ArrayList<>();
   ArrayList<InetAddress> addresses = new ArrayList<>();
   ArrayList<Double> rttList = new ArrayList<>();
+  Neighbors[] neighborList = new Neighbors[4];
+
 
 
   public ringo(int localPort, int totalRingos) {
@@ -35,6 +37,8 @@ public class ringo {
     InetAddress pocName = InetAddress.getByName(args[2]);
     int pocPort = Integer.parseInt(args[3]);
     int n = Integer.parseInt(args[4]);
+
+
 
     ringo ri = new ringo(localPort, n);
     Sender si = new Sender(ri);
