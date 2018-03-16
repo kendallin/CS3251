@@ -48,8 +48,6 @@ public class ringo {
     int pocPort = Integer.parseInt(args[3]);
     int n = Integer.parseInt(args[4]);
 
-
-
     ringo ri = new ringo(localPort, n);
     sender si = new sender(ri);
     Listener li = new Listener(localPort, ri, si);
@@ -78,6 +76,7 @@ public class ringo {
       ArrayList<Integer> ports = ri.getPorts();
       ArrayList<InetAddress> addresses = ri.getAddresses();
       for (int i = 0; i < ports.size(); i++) {
+        System.out.println(ports.get(i));
         si.packetSender(false, addresses.get(i), ports.get(i), ri);
       }
     } else {

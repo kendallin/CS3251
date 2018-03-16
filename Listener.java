@@ -26,9 +26,9 @@ public class Listener {
       //create socket and packets for the desired spots and create a large empty byte array to read into
       DatagramSocket socket = new DatagramSocket(port);
       if (t == 0) {
-        socket.setSoTimeout(7000);
+        socket.setSoTimeout(12000);
       } else if (t == 1) {
-        socket.setSoTimeout(5000);
+        socket.setSoTimeout(10000);
       }
       DatagramPacket packet = new DatagramPacket(new byte[255], 255);
       try {
