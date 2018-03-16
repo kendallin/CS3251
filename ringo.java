@@ -71,7 +71,10 @@ public class ringo {
   }
 
   public void addList(Integer p, InetAddress a, Double r) {
-    if (!ports.contains(p) && !addresses.contains(a)) {
+    boolean pb = ports.contains(p);
+    boolean pa = addresses.contains(a);
+    // System.out.println(pb + " : " + pa);
+    if (!ports.contains(p) || !addresses.contains(a)) {
       System.out.println("ADDING PORT: " + p + " ON ADDRESS: " + a + " WITH RTT: " + r);
       ports.add(p);
       addresses.add(a);

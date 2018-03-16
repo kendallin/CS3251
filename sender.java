@@ -61,7 +61,6 @@ public class sender {
 
     //handle outcomes of response
     if (receivedResponse) {
-      System.out.println("RECEIVED PACKET");
       String response = new String(receivePacket.getData());
       if (search) {
         ri.addList(pocPort, pocName, rtt);
