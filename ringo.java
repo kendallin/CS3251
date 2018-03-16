@@ -41,7 +41,7 @@ public class ringo {
 
 
     ringo ri = new ringo(localPort, n);
-    Sender si = new Sender(ri);
+    sender si = new sender(ri);
     Listener li = new Listener(localPort, ri, si);
     si.setListener(li);
 

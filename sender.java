@@ -2,7 +2,7 @@ import java.net.*;  // for DatagramSocket, DatagramPacket, and InetAddress
 import java.io.*;   // for IOException
 import java.util.*;
 
-public class Sender {
+public class sender {
 
   private static final int TIMEOUT = 2000;   // Resend timeout (milliseconds)
   private static final int MAXTRIES = 5;     // Maximum retransmissions
@@ -10,7 +10,7 @@ public class Sender {
   ringo ri;
   Listener li;
 
-  public Sender(ringo ri) {
+  public sender(ringo ri) {
     this.ri = ri;
   }
 

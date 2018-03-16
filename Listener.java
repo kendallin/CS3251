@@ -6,9 +6,9 @@ public class Listener {
 
   int port;
   ringo ri;
-  Sender si;
+  sender si;
 
-  public Listener(int port, ringo ri, Sender si) {
+  public Listener(int port, ringo ri, sender si) {
     this.port = port;
     this.ri = ri;
     this.si = si;
