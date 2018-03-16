@@ -82,6 +82,14 @@ public class ringo {
     }
   }
 
+  public Neighbors[] generateNeighbors() {
+    Neighbors[] nlist = new Neighbors[totalRingos - 1];
+    for (int i = 0; i < ports.size(); i++) {
+      nlist[i] = new Neighbors(addresses.get(i), ports.get(i), rttList.get(i));
+    }
+    return nlist;
+  }
+
 
 // ask for command input ie file transfer, offline, disconnect, etc
 // read in "if input == "
