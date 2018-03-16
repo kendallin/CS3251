@@ -54,6 +54,9 @@ public class Listener {
 
 
       int rPort = (bytes[5]<< 7) + bytes[6];
+      System.out.println("PORT INFO");
+      System.out.println(rPort);
+      System.out.println(packet.getPort());
       InetAddress rAddress = packet.getAddress();
       ri.addList(rPort, rAddress, -1);
 
