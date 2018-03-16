@@ -127,7 +127,7 @@ public class ringo {
   }
 
   public byte[] keepAlive(int startup, InetAddress rec) {
-    byte[] alist = new byte[9];
+    byte[] alist = new byte[11];
     byte t = 0x02;
     byte mta = (byte)(t << 6);
     if (startup == 1) {
@@ -140,6 +140,15 @@ public class ringo {
     for (byte bx: bmx) {
       alist[i++] = bx;
     }
+
+    // System.out.println(port);
+    // System.out.println(port >> 7);
+    // System.out.println((byte) port);
+    // System.out.println(((port >> 7) << 7) + (byte) port);
+    byte high = (byte)(port >> 7);
+    byte low = (byte) port;
+    alist[i++] = high;
+    alist[i++] = low;
 
     byte[] brx = addressMaker(rec, alist);
     for (byte br : brx) {

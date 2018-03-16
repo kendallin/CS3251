@@ -26,16 +26,14 @@ public class Listener {
       // Receive packet from client
       socket.receive(packet);
 
-      int rPort = packet.getPort();
-      InetAddress rAddress = packet.getAddress();
-      ri.addList(rPort, rAddress, (double)-1);
-
       //get the packet into a string
       byte[] bytes = packet.getData();
       byte[] output = ri.keepAlive(1, pocName);
-      //for (byte y : bytes) {
-        //System.out.println(Byte.toUnsignedInt(y));
-      //}
+
+
+      int rPort = (bytes[5]<< 7) + bytes[6];
+      InetAddress rAddress = packet.getAddress();
+      ri.addList(rPort, rAddress, (double)-1);
 
       int tell = Byte.toUnsignedInt(bytes[0]);
       if (tell >= 192) {
