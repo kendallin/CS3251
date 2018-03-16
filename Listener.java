@@ -1,12 +1,14 @@
 import java.net.*;  // for DatagramSocket, DatagramPacket, and InetAddress
 import java.io.*;   // for IOException
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class Listener {
 
   int port;
   ringo ri;
   sender si;
+  int increment = 0;
 
   public Listener(int port, ringo ri, sender si) {
     this.port = port;
@@ -25,10 +27,15 @@ public class Listener {
     while (true) {  // Run forever, receiving and echoing datagrams
       //create socket and packets for the desired spots and create a large empty byte array to read into
       DatagramSocket socket = new DatagramSocket(port);
+      boolean beMe = false;
       if (t == 0) {
         socket.setSoTimeout(12000);
       } else if (t == 1) {
         socket.setSoTimeout(10000);
+      } else if (t ==3) {
+        beMe = true;
+      } else if (t ==4) {
+        socket.setSoTimeout(1000);
       }
       DatagramPacket packet = new DatagramPacket(new byte[255], 255);
       try {
@@ -54,15 +61,16 @@ public class Listener {
         time = true;
       }
 
-      int rPort;
+      int rPort = 0;
       if (ka) {
         rPort = ((bytes[5] & 0xff) << 7) | (bytes[6] & 0xFF);
-        System.out.println("Received packet: " + packet.getAddress() + " on port: " + rPort);
+        System.out.println("Received KA from: " + packet.getAddress() + " on port: " + rPort);
         ri.addList(rPort, packet.getAddress(), -1);
       }
       if (time) {
         byte[] addR = {bytes[2], bytes[3], bytes[4], bytes[5]};
-        System.out.println("Received RTT from: " + InetAddress.getByAddress(addR));
+        rPort = ((bytes[6] & 0xff) << 7) | (bytes[7] & 0xFF);
+        System.out.println("Received RTT from: " + InetAddress.getByAddress(addR) + " on port: " + rPort);
       }
 
       //check to make sure the string is not empty
@@ -80,6 +88,14 @@ public class Listener {
         }
       }
       socket.close();
+      if (!ri.isTrialStored(rPort) && !ka) {
+        ri.storeTrial(rPort);
+        ri.storeNeighbors(bytes);
+
+        if (!beMe) {
+          break;
+        }
+      }
     }
   }
 }

@@ -6,9 +6,9 @@ public class Neighbors {
 
   private InetAddress address;
   private int port;
-  private double rtt;
+  private int rtt;
 
-  public Neighbors(InetAddress address, int port, double rtt) {
+  public Neighbors(InetAddress address, int port, int rtt) {
     this.address = address;
     this.port = port;
     this.rtt = rtt;
@@ -22,7 +22,7 @@ public class Neighbors {
     return port;
   }
 
-  public double getRTT() {
+  public int getRTT() {
     return rtt;
   }
 
@@ -34,7 +34,7 @@ public class Neighbors {
     port = newPort;
   }
 
-  public void setRTT(double newRTT) {
+  public void setRTT(int newRTT) {
     rtt = newRTT;
   }
 

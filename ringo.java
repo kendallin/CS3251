@@ -2,6 +2,7 @@ import java.net.*;  // for DatagramSocket, DatagramPacket, and InetAddress
 import java.io.*;   // for IOException
 import java.util.*;
 import java.lang.Byte;
+import java.util.concurrent.TimeUnit;
 
 //HELPFUL FUNCTIONS
 // Byte.toUnsignedInt(*byte b*) outputs the unsigned numbers
@@ -15,7 +16,41 @@ public class ringo {
   ArrayList<Integer> ports = new ArrayList<>();
   ArrayList<InetAddress> addresses = new ArrayList<>();
   ArrayList<Integer> rttList = new ArrayList<>();
-  Neighbors[][] neighborList;
+  ArrayList<Neighbors>[] neighborList;
+
+  ArrayList<Integer> trial = new ArrayList<>();
+
+  public boolean isTrialStored(int port) {
+    if (trial.contains(port)) {
+      return true;
+    }
+    return false;
+  }
+
+  public void storeTrial(int port) {
+    this.trial.add(port);
+  }
+
+  public void storeNeighbors(byte[] bytes) {
+    for (ArrayList<Neighbors> n : this.neighborList) {
+      if (n == null) {
+        for (int i = 0; i < bytes[12]; i++) {
+          int j = i * 7 + 13;
+          int rPort = ((bytes[j] & 0xff) << 7) | (bytes[j+1] & 0xFF);
+          byte[] addR = {bytes[j + 2], bytes[j + 3], bytes[j + 4], bytes[j + 5]};
+          int rtt = (int) bytes[j + 6];
+          try {
+            InetAddress a = InetAddress.getByAddress(addR);
+            n.add(new Neighbors(a, rPort, rtt));
+          } catch (Exception e) {
+            System.out.println("Address is wrong");
+          }
+          break;
+
+        }
+      }
+    }
+  }
 
 
   //RINGO INSTANTIATION
@@ -28,7 +63,7 @@ public class ringo {
     } catch(UnknownHostException e) {
       System.out.println(e);
     }
-    this.neighborList = new Neighbors[totalRingos][totalRingos];
+    this.neighborList = new ArrayList[totalRingos];
 
   }
 
@@ -78,9 +113,17 @@ public class ringo {
       for (int i = 0; i < ports.size(); i++) {
         si.packetSender(false, addresses.get(i), ports.get(i), ri);
       }
+      li.listen(pocName, pocPort, 3);
     } else {
       li.listen(pocName, pocPort, 1);
       System.out.println("Done Waiting, Waiting forever now");
+      li.listen(pocName, pocPort, 2);
+      ArrayList<Integer> ports = ri.getPorts();
+      ArrayList<InetAddress> addresses = ri.getAddresses();
+      for (int i = 0; i < ports.size(); i++) {
+        si.packetSender(false, addresses.get(i), ports.get(i), ri);
+        li.listen(pocName, pocPort, 1);
+      }
       li.listen(pocName, pocPort, 2);
     }
 
@@ -135,7 +178,7 @@ public class ringo {
   //[1x type and ack][1x end?][4x local address][4x target address][1x marker for number of elements][??x #elements * 7][1x checksum] = 12 + 7 * # elements
   public byte[] dataHeader(byte t, int ack, int end, InetAddress rec, byte[] data) {
     //create list used for pushing byte arrays on
-    byte[] alist = new byte[12 + data.length];
+    byte[] alist = new byte[14 + data.length];
 
     byte mta = (byte)(t << 6);
     if (ack == 1) {
@@ -154,6 +197,11 @@ public class ringo {
     for (byte bx: bmx) {
       alist[i++] = bx;
     }
+
+    byte high = (byte)(port >> 7);
+    byte low = (byte) port;
+    alist[i++] = high;
+    alist[i++] = low;
 
     byte[] byx = addressMaker(addresses.get(0));
     for (byte by: bmx) {
