@@ -16,7 +16,7 @@ public class ringo {
   InetAddress localHost;
   ArrayList<Integer> ports = new ArrayList<>();
   ArrayList<InetAddress> addresses = new ArrayList<>();
-  ArrayList<Long> rttList = new ArrayList<>(); // change to int??
+  ArrayList<Double> rttList = new ArrayList<>();
 
 
   public ringo(int localPort, int totalRingos) {
@@ -65,13 +65,6 @@ public class ringo {
     } else {
       ri.listen(localPort, pocName, pocPort, ri, t);
     }
-
-    // int var = 1;
-    // var = (var << 4);
-    // System.out.println(var);
-    // System.out.println(Integer.toBinaryString(var));
-
-    //String m = "m";
     //byte sf = (byte) 0x01;
 
   }
@@ -82,9 +75,9 @@ public class ringo {
 
     // get bytes parsed and then create send and receive packets
     byte[] bytesToSend = ri.keepAlive(1, pocName);
-    for (byte x : bytesToSend) {
-      System.out.println(Byte.toUnsignedInt(x));
-    }
+    // for (byte x : bytesToSend) {
+    //   System.out.println(Byte.toUnsignedInt(x));
+    // }
 
 
     DatagramPacket sendPacket = new DatagramPacket(bytesToSend, bytesToSend.length, pocName, pocPort);
@@ -107,7 +100,7 @@ public class ringo {
         receivedResponse = true;
         long lEndTime = System.nanoTime();
         elapsed = lEndTime - lStartTime; // cant find RTT outside of do
-        rtt = (double)elapsedTime / 1000000.0;
+        rtt = (double)elapsed / 1000000.0;
         System.out.println("RTT in milliseconds: " + rtt);
 
       } catch (InterruptedIOException e) {  // We did not get anything so start to increment the tries counter
@@ -119,20 +112,28 @@ public class ringo {
     //handle outcomes of response
     if (receivedResponse) {
       String response = new String(receivePacket.getData());
-      //subtract time variables
-      // set vectors for POC
-      ports.add(pocPort);
-      addresses.add(pocName);
-      rttList.add(rtt);
-
-      for (int k = 0; k < ports.size(); k++) {
-        System.out.println("port: " + ports.get(k));
-        System.out.println("address: " + addresses.get(k));
-        System.out.println("rtt: " + rttList.get(k));
+      int rPort = receivePacket.getPort();
+      InetAddress rAddress = receivePacket.getAddress();
+      boolean exists = false;
+      for (int p : ports) {
+        if (rPort == p) {
+          exists = true;
+        }
+      }
+      if (exists == false) {
+        ports.add(rPort);
+        addresses.add(rAddress);
+        rttList.add((double)(-1));
       }
 
     } else {
       System.out.println("No response -- giving up.");
+    }
+
+    for (int k = 0; k < ports.size(); k++) {
+      System.out.println("port: " + ports.get(k));
+      System.out.println("address: " + addresses.get(k));
+      System.out.println("rtt: " + rttList.get(k));
     }
 
     // close socket
@@ -140,6 +141,7 @@ public class ringo {
   }
 
   private void listen(int localPort, InetAddress pocName, int pocPort, ringo ri, int t) throws IOException {
+    int count = 0;
     while (true) {  // Run forever, receiving and echoing datagrams
       //create socket and packets for the desired spots and create a large empty byte array to read into
       DatagramSocket socket = new DatagramSocket(localPort);
@@ -176,13 +178,28 @@ public class ringo {
         packet.setLength(output.length);
       }
       if (t != 0) {
-        System.out.println("calling packetsender");
+        if (count < 3) {
+          // start rtt matrix process
+        }
         ri.packetSender(localPort, pocName, pocPort, ri);
+        count++;
       }
       socket.close();
     }
   }
 
+
+// ask for command input ie file transfer, offline, disconnect, etc
+// read in "if input == "
+// do the task requested
+// milestone 1: show ring, show matrix
+
+// create functions for ring and matrix just print arrays ri.showRing & ri.showMatrix
+
+// Socket echoSocket = new Socket(hostName, portNumber);
+// ObjectOutputStream out = new ObjectOutputStream(echoSocket.getOutputStream());
+// out.writeObject(array of ports/addresses/etc);
+// read in with inputstream put into own array or just stored as ring formation or rttmatrix
 
 
   private byte[] dataHeader(byte t, int ack, int end, InetAddress rec, String data) {
