@@ -39,11 +39,14 @@ public class ringo {
           int rPort = ((bytes[j] & 0xff) << 7) | (bytes[j+1] & 0xFF);
           byte[] addR = {bytes[j + 2], bytes[j + 3], bytes[j + 4], bytes[j + 5]};
           int rtt = (int) bytes[j + 6];
+          for (byte x : addR) {
+            System.out.println(x);
+          }
           try {
             InetAddress a = InetAddress.getByAddress(addR);
             n.add(new Neighbors(a, rPort, rtt));
           } catch (Exception e) {
-            System.out.println("Address is wrong");
+            System.out.println("Error");
           }
           break;
 

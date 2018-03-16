@@ -64,7 +64,6 @@ public class Listener {
       int rPort = 0;
       if (ka) {
         rPort = ((bytes[5] & 0xff) << 7) | (bytes[6] & 0xFF);
-        System.out.println("Received KA from: " + packet.getAddress() + " on port: " + rPort);
         ri.addList(rPort, packet.getAddress(), -1);
       }
       if (time) {
