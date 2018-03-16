@@ -24,6 +24,7 @@ public class ringo {
     this.totalRingos = totalRingos;
     try {
       this.localHost = InetAddress.getLocalHost();
+      System.out.println("Local Host: " + this.localHost);
     } catch(UnknownHostException e) {
       System.out.println(e);
     }
@@ -150,18 +151,16 @@ public class ringo {
     }
     alist[1] = zeroEnd;
 
-    System.out.println(localHost);
+    System.out.println("LOCAL HOST HERE " + localHost);
     byte[] bmx = addressMaker(localHost);
     int i = 2;
     for (byte bx: bmx) {
       alist[i++] = bx;
     }
 
-    System.out.println("LOCAL HOST ADDRESS");
     byte[] byx = addressMaker(addresses.get(0));
     for (byte by: bmx) {
       alist[i++] = by;
-      System.out.println(by & 0xFF);
     }
 
     alist[i++] = (byte)ports.size();

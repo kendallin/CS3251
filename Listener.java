@@ -45,11 +45,11 @@ public class Listener {
       byte[] bytes = packet.getData();
       byte[] output = ri.keepAlive(1, pocName);
 
-      System.out.println("Received packet");
+      System.out.println("Received packet" + packet.getAddress());
       byte[] addR = {bytes[2], bytes[3], bytes[4], bytes[5]};
       System.out.println(InetAddress.getByAddress(addR));
       for (byte h : bytes) {
-        System.out.println(h & 0xFF);
+        // System.out.println(h & 0xFF);
       }
 
 
