@@ -146,7 +146,7 @@ public class ringo {
       // Receive packet from client
       socket.receive(packet);
 
-      int rPort = packet.getPort();
+      int rPort = socket.getPort();
       InetAddress rAddress = packet.getAddress();
       boolean pExists = false;
       boolean aExists = false;
