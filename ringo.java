@@ -19,6 +19,7 @@ public class ringo {
   ArrayList<Double> rttList = new ArrayList<>();
 
 
+
   public ringo(int localPort, int totalRingos) {
     this.port = localPort;
     this.totalRingos = totalRingos;
@@ -37,6 +38,7 @@ public class ringo {
     InetAddress pocName = InetAddress.getByName(args[2]);
     int pocPort = Integer.parseInt(args[3]);
     int n = Integer.parseInt(args[4]);
+    Neighbors[] neighborList = new Neighbors[n - 1];
 
 
     ringo ri = new ringo(localPort, n);
@@ -114,15 +116,17 @@ public class ringo {
       ports.add(pocPort);
       addresses.add(pocName);
       rttList.add(rtt);
-
+      Neighbors neighbor = new Neighbors(pocName, pocPort, rtt);
     } else {
       System.out.println("No response -- giving up.");
     }
 
+    System.out.println(neighborList[0]);
     for (int k = 0; k < ports.size(); k++) {
       System.out.println("port: " + ports.get(k));
       System.out.println("address: " + addresses.get(k));
       System.out.println("rtt: " + rttList.get(k));
+
     }
 
     // close socket
@@ -151,7 +155,6 @@ public class ringo {
       }
       if (pExists == false && aExists == false) {
         ports.add(rPort);
-        System.out.println("new port!!" + rPort);
         addresses.add(rAddress);
         rttList.add((double)(-1));
       }
