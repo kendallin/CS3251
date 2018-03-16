@@ -15,8 +15,7 @@ public class ringo {
   ArrayList<Integer> ports = new ArrayList<>();
   ArrayList<InetAddress> addresses = new ArrayList<>();
   ArrayList<Integer> rttList = new ArrayList<>();
-  Neighbors[] neighborList = new Neighbors[4];
-
+  Neighbors[][] neighborList;
 
 
   //RINGO INSTANTIATION
@@ -28,7 +27,16 @@ public class ringo {
     } catch(UnknownHostException e) {
       System.out.println(e);
     }
+    this.neighborList = new Neighbors[totalRingos][totalRingos];
 
+  }
+
+  public ArrayList<Integer> getPorts() {
+    return this.ports;
+  }
+
+  public ArrayList<InetAddress> getAddresses() {
+    return this.addresses;
   }
 
   public static void main(String[] args) throws IOException {
@@ -61,14 +69,20 @@ public class ringo {
         System.out.println("Please enter a valid type string- S/R/F");
     }
 
-    //VERY BASIC BATH FOR STARTUP OF RINGOS
+    //VERY BASIC pATH FOR STARTUP OF RINGOS
     if (t == 0) {
       si.packetSender(true, pocName, pocPort, ri);
       li.listen(pocName, pocPort, t);
-      System.out.println("Done Waiting");
+      System.out.println("Done Waiting, Sending RTT");
+      ArrayList<Integer> ports = ri.getPorts();
+      ArrayList<InetAddress> addresses = ri.getAddresses();
+      for (int i = 0; i < ports.size(); i++) {
+        si.packetSender(false, addresses.get(i), ports.get(i), ri);
+      }
     } else {
       li.listen(pocName, pocPort, 1);
-      System.out.println("Done Waiting");
+      System.out.println("Done Waiting, Waiting forever now");
+      li.listen(pocName, pocPort, 2);
     }
 
   }
@@ -136,15 +150,18 @@ public class ringo {
     }
     alist[1] = zeroEnd;
 
+    System.out.println(localHost);
     byte[] bmx = addressMaker(localHost);
     int i = 2;
     for (byte bx: bmx) {
       alist[i++] = bx;
     }
 
-    byte[] byx = addressMaker(rec);
+    System.out.println("LOCAL HOST ADDRESS");
+    byte[] byx = addressMaker(addresses.get(0));
     for (byte by: bmx) {
       alist[i++] = by;
+      System.out.println(by & 0xFF);
     }
 
     alist[i++] = (byte)ports.size();

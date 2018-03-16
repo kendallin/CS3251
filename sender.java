@@ -28,7 +28,8 @@ public class sender {
     if (search) {
       bytesToSend = ri.keepAlive(1, pocName);
     } else {
-      bytesToSend = new byte[8];
+      byte[] data = ri.generateRTTBytes();
+      bytesToSend = ri.dataHeader((byte) 0x00, 1, 1, pocName, data);
     }
 
     DatagramPacket sendPacket = new DatagramPacket(bytesToSend, bytesToSend.length, pocName, pocPort);

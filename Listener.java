@@ -26,9 +26,9 @@ public class Listener {
       //create socket and packets for the desired spots and create a large empty byte array to read into
       DatagramSocket socket = new DatagramSocket(port);
       if (t == 0) {
-        socket.setSoTimeout(4000);
+        socket.setSoTimeout(7000);
       } else if (t == 1) {
-        socket.setSoTimeout(6000);
+        socket.setSoTimeout(5000);
       }
       DatagramPacket packet = new DatagramPacket(new byte[255], 255);
       try {
@@ -36,6 +36,7 @@ public class Listener {
         socket.receive(packet);
       } catch (java.net.SocketTimeoutException e) {
         System.out.println(e);
+        socket.close();
         break;
       }
 
@@ -43,6 +44,13 @@ public class Listener {
       //get the packet into a string
       byte[] bytes = packet.getData();
       byte[] output = ri.keepAlive(1, pocName);
+
+      System.out.println("Received packet");
+      byte[] addR = {bytes[2], bytes[3], bytes[4], bytes[5]};
+      System.out.println(InetAddress.getByAddress(addR));
+      for (byte h : bytes) {
+        System.out.println(h & 0xFF);
+      }
 
 
       int rPort = (bytes[5]<< 7) + bytes[6];
@@ -67,11 +75,10 @@ public class Listener {
         packet.setLength(output.length);
       }
       if (t != 0) {
-        if (count < 3) {
-          // start rtt matrix process
+        if (socket.getSoTimeout() != 0) {
+          si.packetSender(true, pocName, pocPort, ri);
+          count++;
         }
-        si.packetSender(true, pocName, pocPort, ri);
-        count++;
       }
       socket.close();
     }
