@@ -31,7 +31,7 @@ public class Listener {
       if (t == 0) {
         socket.setSoTimeout(12000);
       } else if (t == 1) {
-        socket.setSoTimeout(10000);
+        socket.setSoTimeout(8000);
       } else if (t ==3) {
         beMe = true;
       } else if (t ==4) {

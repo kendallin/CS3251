@@ -106,7 +106,7 @@ public class ringo {
         System.out.println("Please enter a valid type string- S/R/F");
     }
 
-    //VERY BASIC pATH FOR STARTUP OF RINGOS
+    //VERY BASIC PATH FOR STARTUP OF RINGOS
     if (t == 0) {
       si.packetSender(true, pocName, pocPort, ri);
       li.listen(pocName, pocPort, t);
