@@ -18,18 +18,21 @@ public class sender {
     this.li = li;
   }
 
-  public void packetSender(boolean search, InetAddress pocName, int pocPort, ringo ri) throws IOException {
+  public void packetSender(int search, InetAddress pocName, int pocPort, ringo ri) throws IOException {
     System.out.println("Sending Packet to " + pocName + " on " + pocPort);
     DatagramSocket socket = new DatagramSocket();
     socket.setSoTimeout(TIMEOUT);  // Maximum receive blocking time (milliseconds)
 
     // get bytes parsed and then create send and receive packets
     byte[] bytesToSend;
-    if (search) {
+    if (search == 0) {
       bytesToSend = ri.keepAlive(1, pocName);
-    } else {
+    } else if (search == 1) {
       byte[] data = ri.generateRTTBytes();
       bytesToSend = ri.dataHeader((byte) 0x00, 1, 1, pocName, data);
+    } else {
+      bytesToSend = ri.dataHeader((byte) 0x01, 1, 1, pocName, ri.getBitty());
+
     }
 
     DatagramPacket sendPacket = new DatagramPacket(bytesToSend, bytesToSend.length, pocName, pocPort);
@@ -63,7 +66,7 @@ public class sender {
     //handle outcomes of response
     if (receivedResponse) {
       String response = new String(receivePacket.getData());
-      if (search) {
+      if (search == 0) {
         ri.addList(pocPort, pocName, rtt);
       }
     } else {

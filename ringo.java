@@ -3,6 +3,7 @@ import java.io.*;   // for IOException
 import java.util.*;
 import java.lang.Byte;
 import java.util.concurrent.TimeUnit;
+import java.nio.file.*;
 
 //HELPFUL FUNCTIONS
 // Byte.toUnsignedInt(*byte b*) outputs the unsigned numbers
@@ -17,6 +18,7 @@ public class ringo {
   ArrayList<InetAddress> addresses = new ArrayList<>();
   ArrayList<Integer> rttList = new ArrayList<>();
   ArrayList<Neighbors>[] neighborList;
+  byte[] bitty = new byte[32];
 
   ArrayList<Integer> trial = new ArrayList<>();
 
@@ -31,22 +33,27 @@ public class ringo {
     this.trial.add(port);
   }
 
+  public byte[] getBitty() {
+    return this.bitty;
+  }
+
   public void storeNeighbors(byte[] bytes) {
     for (ArrayList<Neighbors> n : this.neighborList) {
       if (n == null) {
+        n = new ArrayList<Neighbors>();
         for (int i = 0; i < bytes[12]; i++) {
           int j = i * 7 + 13;
           int rPort = ((bytes[j] & 0xff) << 7) | (bytes[j+1] & 0xFF);
           byte[] addR = {bytes[j + 2], bytes[j + 3], bytes[j + 4], bytes[j + 5]};
           int rtt = (int) bytes[j + 6];
           for (byte x : addR) {
-            System.out.println(x);
           }
           try {
-            InetAddress a = InetAddress.getByAddress(addR);
+            InetAddress a = InetAddress.getByName(addR[0] + "." + addR[1] + "." + addR[2] + "." + addR[3]);
+            System.out.println(rtt);
             n.add(new Neighbors(a, rPort, rtt));
           } catch (Exception e) {
-            System.out.println("Error");
+            System.out.println(e);
           }
           break;
 
@@ -86,6 +93,8 @@ public class ringo {
     int pocPort = Integer.parseInt(args[3]);
     int n = Integer.parseInt(args[4]);
 
+    
+
     ringo ri = new ringo(localPort, n);
     sender si = new sender(ri);
     Listener li = new Listener(localPort, ri, si);
@@ -108,15 +117,18 @@ public class ringo {
 
     //VERY BASIC PATH FOR STARTUP OF RINGOS
     if (t == 0) {
-      si.packetSender(true, pocName, pocPort, ri);
+      si.packetSender(0, pocName, pocPort, ri);
       li.listen(pocName, pocPort, t);
       System.out.println("Done Waiting, Sending RTT");
       ArrayList<Integer> ports = ri.getPorts();
       ArrayList<InetAddress> addresses = ri.getAddresses();
       for (int i = 0; i < ports.size(); i++) {
-        si.packetSender(false, addresses.get(i), ports.get(i), ri);
+        si.packetSender(1, addresses.get(i), ports.get(i), ri);
       }
-      li.listen(pocName, pocPort, 3);
+      System.out.println("Waiting for a bit");
+      li.listen(pocName, pocPort, 0);
+      System.out.println("Supposedly Sending things out.");
+      ri.generateDataPackets(pocName, pocPort, ri, si);
     } else {
       li.listen(pocName, pocPort, 1);
       System.out.println("Done Waiting, Waiting forever now");
@@ -124,10 +136,10 @@ public class ringo {
       ArrayList<Integer> ports = ri.getPorts();
       ArrayList<InetAddress> addresses = ri.getAddresses();
       for (int i = 0; i < ports.size(); i++) {
-        si.packetSender(false, addresses.get(i), ports.get(i), ri);
+        si.packetSender(1, addresses.get(i), ports.get(i), ri);
         li.listen(pocName, pocPort, 1);
       }
-      li.listen(pocName, pocPort, 2);
+      li.listen(pocName, pocPort, 0);
     }
 
   }
@@ -151,6 +163,7 @@ public class ringo {
     Neighbors[] nlist = new Neighbors[totalRingos - 1];
     for (int i = 0; i < ports.size(); i++) {
       nlist[i] = new Neighbors(addresses.get(i), ports.get(i), rttList.get(i));
+      // System.out.println(addresses.get(i) + " " + ports.get(i) + " " + rttList.get(i));
     }
     return nlist;
   }
@@ -175,6 +188,29 @@ public class ringo {
     }
     return b;
 
+  }
+
+  public void generateDataPackets(InetAddress pocName, int pocPort, ringo ri, sender si) {
+    try {
+      Path path = Paths.get("story.txt");
+      byte[] data = Files.readAllBytes(path);
+      for (int i = 0; i < (data.length / 32) + 1; i++) {
+        byte[] hello = new byte[32];
+        for(int j = 0; j < 32; j++) {
+          if (i * 32 + j < data.length) {
+            hello[j] = data[i * 32 + j];
+          } else {
+            hello[j] = 0x0;
+          }
+          
+        }
+        this.bitty = hello;
+        si.packetSender(2, pocName, pocPort, ri);
+      }
+    } catch (IOException e) {
+
+    }
+    
   }
 
   //makes the data headers for rtt vectors, needs to pass in the data array generated fromgenerateRTTBytes

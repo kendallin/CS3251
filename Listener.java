@@ -52,11 +52,12 @@ public class Listener {
       int tell = Byte.toUnsignedInt(bytes[0]);
       boolean time = false;
       boolean ka = false;
+      boolean dataD = false;
       if (tell >= 192) {
       } else if (tell >= 128) {
         ka = true;
       } else if (tell >= 64) {
-        time = true;
+        dataD = true;
       } else if (tell >= 0) {
         time = true;
       }
@@ -72,17 +73,26 @@ public class Listener {
         System.out.println("Received RTT from: " + InetAddress.getByAddress(addR) + " on port: " + rPort);
       }
 
+      if (dataD) {
+        byte[] may = new byte[32];
+        for (int i = 0; i < 32; i++) {
+          may[i] = bytes[12 + i];
+        }
+        System.out.print(new String(may));
+      }
+
       //check to make sure the string is not empty
       if (!output.equals("")) {
 
         //create a new datagrampacket to send and send it
-        DatagramPacket sendPacket = new DatagramPacket(bytes, output.length, packet.getAddress(), packet.getPort());
-        socket.send(sendPacket);
-        packet.setLength(output.length);
+          DatagramPacket sendPacket = new DatagramPacket(bytes, output.length, packet.getAddress(), packet.getPort());
+          socket.send(sendPacket);
+          packet.setLength(output.length);
+        
       }
       if (t != 0) {
         if (socket.getSoTimeout() != 0) {
-          si.packetSender(true, pocName, pocPort, ri);
+          si.packetSender(0, pocName, pocPort, ri);
           count++;
         }
       }
