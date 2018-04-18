@@ -16,6 +16,7 @@ class HeapAlgo {
               //System.out.print(end.get(i) + " "); //need another for loop here
 
             }
+            end.add(0);
             finalArr.add(end);
             //System.out.println();
 
@@ -72,10 +73,12 @@ class HeapAlgo {
         for (int j = 0; j < x.get(i).size(); j++) {
           if (j == x.get(i).size() - 1) {
             curSum += a[x.get(i).get(j)][0];
+            //System.out.println(a[x.get(i).get(j)][0]);
             //System.out.println("end of list: " + curSum);
           } else {
             curSum += a[x.get(i).get(j)][x.get(i).get(j + 1)];
             //System.out.println("middle of list: " + curSum);
+            //System.out.println(a[x.get(i).get(j)][x.get(i).get(j + 1)]);
           }
         }
         if (curSum < bestSum || bestSum == 0) {
@@ -93,19 +96,24 @@ class HeapAlgo {
       for (int k = 0; k < a[0].length; k++) {
         if (a[0][k] < 0) {
           num = true;
+          //System.out.println(num);
         }
       }
       if (num) {
         int[][] arr = new int[a.length - 1][a.length - 1];
         int countI = 0;
         int countJ = 0;
-        for (int i = 0; i < a.length - 1; i++) {
-          for (int j = 0; j < a[0].length - 1; j++) {
-            if (a[i][j] > 0) {
+        for (int i = 0; i < a.length; i++) {
+          for (int j = 0; j < a[0].length; j++) {
+            if (a[i][j] >= 0) {
               arr[countI][countJ] = a[i][j];
-              countI++;
+              //System.out.println("arr: " + arr[countI][countJ]);
               countJ++;
             }
+          }
+          countJ = 0;
+          if (a[i][0] >= 0) {
+            countI++;
           }
         }
         return arr;
@@ -117,7 +125,8 @@ class HeapAlgo {
     public static void main(String args[])
     {
         HeapAlgo obj = new HeapAlgo();
-        int a[][] = {{0, 13, 5, 2, 21}, {13, 0, 9, 4, 9}, {5, 9, 0, 1, 21}, {2, 4, 1, 0, 7}, {21, 9, 21, 7, 0}};//{{0, -1, 1, 4}, {-1, -1, -1, -1}, {1, -1, 0, 7}, {4, -1, 7, 0}};
+        int a[][] = {{0, -1, 5, 2, 21}, {-1, -1, -1, -1, -1}, {5, -1, 0, 1, 21}, {2, -1, 1, 0, 7}, {21, -1, 21, 7, 0}};
+        //{{0, -1, 1, 4}, {-1, -1, -1, -1}, {1, -1, 0, 7}, {4, -1, 7, 0}};
         int arr[][] = takeOut(a);
         int x[] = new int[arr.length];
         for (int i = 0; i < arr.length; i++) {
