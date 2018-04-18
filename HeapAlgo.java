@@ -1,3 +1,6 @@
+// https://www.geeksforgeeks.org/heaps-algorithm-for-generating-permutations/
+// used to find all permutations
+
 import java.util.*;
 class HeapAlgo {
 
@@ -10,16 +13,10 @@ class HeapAlgo {
 
           if (a[0] == 0) {
             for (int i=0; i<n; i++){
-              //end[i] = a[i];
               end.add(a[i]);
-
-              //System.out.print(end.get(i) + " "); //need another for loop here
-
             }
             end.add(0);
             finalArr.add(end);
-            //System.out.println();
-
           }
         return end;
     }
@@ -73,19 +70,14 @@ class HeapAlgo {
         for (int j = 0; j < x.get(i).size(); j++) {
           if (j == x.get(i).size() - 1) {
             curSum += a[x.get(i).get(j)][0];
-            //System.out.println(a[x.get(i).get(j)][0]);
-            //System.out.println("end of list: " + curSum);
           } else {
             curSum += a[x.get(i).get(j)][x.get(i).get(j + 1)];
-            //System.out.println("middle of list: " + curSum);
-            //System.out.println(a[x.get(i).get(j)][x.get(i).get(j + 1)]);
           }
         }
         if (curSum < bestSum || bestSum == 0) {
           bestSum = curSum;
           index = i;
         }
-        //System.out.println(bestSum);
       }
       return index;
     }
@@ -96,7 +88,6 @@ class HeapAlgo {
       for (int k = 0; k < a[0].length; k++) {
         if (a[0][k] < 0) {
           num = true;
-          //System.out.println(num);
         }
       }
       if (num) {
@@ -107,7 +98,6 @@ class HeapAlgo {
           for (int j = 0; j < a[0].length; j++) {
             if (a[i][j] >= 0) {
               arr[countI][countJ] = a[i][j];
-              //System.out.println("arr: " + arr[countI][countJ]);
               countJ++;
             }
           }
@@ -126,23 +116,13 @@ class HeapAlgo {
     {
         HeapAlgo obj = new HeapAlgo();
         int a[][] = {{0, -1, 5, 2, 21}, {-1, -1, -1, -1, -1}, {5, -1, 0, 1, 21}, {2, -1, 1, 0, 7}, {21, -1, 21, 7, 0}};
-        //{{0, -1, 1, 4}, {-1, -1, -1, -1}, {1, -1, 0, 7}, {4, -1, 7, 0}};
         int arr[][] = takeOut(a);
         int x[] = new int[arr.length];
         for (int i = 0; i < arr.length; i++) {
           x[i] = i;
-          //System.out.println(x[i]);
         }
         obj.heapPermutation(x, x.length, x.length);
-
-        // for (List<Integer> j : finalArr) {
-        //   for (Integer k : j) {
-        //     System.out.print(k + " ");
-        //   }
-        //   System.out.println();
-        // }
         int bestPath = bestIndex(finalArr, arr);
-        //System.out.println(bestPath);
         System.out.println(finalArr.get(bestPath));
     }
 }
