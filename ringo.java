@@ -192,6 +192,7 @@ public class ringo {
 
   public void generateDataPackets(InetAddress pocName, int pocPort, ringo ri, sender si) {
     try {
+      System.out.println("Story generation");
       Path path = Paths.get("story.txt");
       byte[] data = Files.readAllBytes(path);
       for (int i = 0; i < (data.length / 32) + 1; i++) {
@@ -205,6 +206,7 @@ public class ringo {
           
         }
         this.bitty = hello;
+        System.out.println("Sending: " + i);
         si.packetSender(2, pocName, pocPort, ri);
       }
     } catch (IOException e) {

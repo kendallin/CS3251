@@ -74,6 +74,7 @@ public class Listener {
       }
 
       if (dataD) {
+        System.out.println("received");
         byte[] may = new byte[32];
         for (int i = 0; i < 32; i++) {
           may[i] = bytes[12 + i];
