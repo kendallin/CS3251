@@ -115,8 +115,11 @@ class HeapAlgo {
     public static void main(String args[])
     {
         HeapAlgo obj = new HeapAlgo();
-        int a[][] = {{0, -1, 5, 2, 21}, {-1, -1, -1, -1, -1}, {5, -1, 0, 1, 21}, {2, -1, 1, 0, 7}, {21, -1, 21, 7, 0}};
-        int arr[][] = takeOut(a);
+        int a[][] = {{0, 13, 5, 2, 21}, {13, 0, 9, 4, 9},
+          {5, 9, 0, 1, 21}, {2, 4, 1, 0, 7}, {21, 9, 21, 7, 0}}; // without churn
+        int a1[][] = {{0, -1, 5, 2, 21}, {-1, -1, -1, -1, -1},
+          {5, -1, 0, 1, 21}, {2, -1, 1, 0, 7}, {21, -1, 21, 7, 0}}; // with churn
+        int arr[][] = takeOut(a1); // change a to test different cases
         int x[] = new int[arr.length];
         for (int i = 0; i < arr.length; i++) {
           x[i] = i;
