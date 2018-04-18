@@ -1,128 +1,169 @@
 ////////////////////////////////////////////////////////////////////////////////
-Listed is our attempts at debugging placing the vectors into the rtt array for
-the class.
 THis is a SENDERS terminal. Here we see the local host address printed at the top.
-Next all packet sends are clarified and stated. A Keep alive packet is sent to a neighbor
-and then the sender starts to listen.
-and shortly after one is received from the senders poc.
+It sends a packet to its POC then it begins to listen.
 
 Once the timeout has happened the ringo announces its done waiting and it sends an
 RTT packet with its info out. It is received (no reported errors) by both of its
 neighbors.
 
-The sender than listens again and this is where the issue arrises. An RTT is received
-by the sender and it begins to decompose it. I printed out the byte by byte values
-that are returned for the address as well as the inputs for its function, this is
-a valid loopback address (this fails on the virtual machines as well) and the method
-collapses with a null pointer. This happens everytime you try to place an RTT with
-every receipt of one.
+After another timeout it sends out its RTT vector than waits to receive it. It receives a -1 from its POC because the 
+POC was hit by the sender, and was not able to time responses so it does not know its timing. It then begins to send out data.
+
+Story generation is when the file is being read and then it sends out the packets bit by bit.
+
+We do see that the second packet fails which is a bug.
 
 BEGIN SENDER////////////////////////////
 
-Michaels-MacBook-Pro-3:CS3251 michaelgoodell$ java ringo S 5000 localhost 5001 3
-Local Host: Michaels-MacBook-Pro-3.local/10.233.53.195
+lawn-143-215-95-7:CS3251 michaelgoodell$ java ringo S 5000 localhost 5001 2
+Local Host: lawn-143-215-95-7.lawn.gatech.edu/143.215.95.7
 Sending Packet to localhost/127.0.0.1 on 5001
+Timed out, 4 more tries...
+Timed out, 3 more tries...
 Listening for sockets
 Done Waiting, Sending RTT
 Sending Packet to localhost/127.0.0.1 on 5001
-Sending Packet to /127.0.0.1 on 5002
+Waiting for a bit
 Listening for sockets
-Received RTT from: /10.233.53.195 on port: 5001
-127
-0
-0
-1
-java.lang.NullPointerException
-Address is wrong
-127
-0
-0
-1
-java.lang.NullPointerException
-Address is wrong
-127
-0
-0
-1
-java.lang.NullPointerException
-Address is wrong
-Received RTT from: /10.233.53.195 on port: 5002
-127
-0
-0
-1
-java.lang.NullPointerException
-Address is wrong
-127
-0
-0
-1
-java.lang.NullPointerException
-Address is wrong
-127
-0
-0
-1
-java.lang.NullPointerException
+Received RTT from: /143.215.95.7 on port: 5001
+-1
+-1
+Supposedly Sending things out.
+Story generation
+Sending: 0
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 1
+Sending Packet to localhost/127.0.0.1 on 5001
+Timed out, 4 more tries...
+Timed out, 3 more tries...
+Timed out, 2 more tries...
+Timed out, 1 more tries...
+Timed out, 0 more tries...
+No response -- giving up.
+Sending: 2
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 3
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 4
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 5
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 6
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 7
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 8
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 9
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 10
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 11
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 12
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 13
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 14
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 15
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 16
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 17
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 18
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 19
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 20
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 21
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 22
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 23
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 24
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 25
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 26
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 27
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 28
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 29
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 30
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 31
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 32
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 33
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 34
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 35
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 36
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 37
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 38
+Sending Packet to localhost/127.0.0.1 on 5001
+Sending: 39
+Sending Packet to localhost/127.0.0.1 on 5001
 
 
 ////////////////////////////////////////////////////////////////////////////////
 Below is the receivers output. A lot of it is similar with the difference of
-going to listening first. The final two "listenings" are the two different styles.
-one for a timed listen, the other for a long one. The same issue persists with
-not being able to read in the address.
+going to listening first. It all works the same as the sneder up until it begins receiving the packets and printing them out. The second missing
+packet can be see when it starts to errantly send a packet.
 
-BEGIN FORWARDER///////////////////////////////
+BEGIN RECEIVER///////////////////////////////
 
-^CMichaels-MacBook-Pro-3:CS3251 michaelgoodell$ java ringo F 5001 localhost 5002 3
-Local Host: Michaels-MacBook-Pro-3.local/10.233.53.195
+lawn-143-215-95-7:CS3251 michaelgoodell$ java ringo F 5001 localhost 5000 2
+Local Host: lawn-143-215-95-7.lawn.gatech.edu/143.215.95.7
 Listening for sockets
-Sending Packet to localhost/127.0.0.1 on 5002
+Sending Packet to localhost/127.0.0.1 on 5000
+Timed out, 4 more tries...
 Done Waiting, Waiting forever now
 Listening for sockets
-Received RTT from: /10.233.53.195 on port: 5000
-127
-0
-0
-1
-java.lang.NullPointerException
-Address is wrong
-127
-0
-0
-1
-java.lang.NullPointerException
-Address is wrong
-127
-0
-0
-1
-java.lang.NullPointerException
-Address is wrong
+Received RTT from: /143.215.95.7 on port: 5000
+16
+16
 Sending Packet to /127.0.0.1 on 5000
 Listening for sockets
-Received RTT from: /10.233.53.195 on port: 5002
-Sending Packet to localhost/127.0.0.1 on 5002
+CS3251
+Networking -- The Story oSending Packet to localhost/127.0.0.1 on 5000
 Timed out, 4 more tries...
-127
-0
-0
-1
-java.lang.NullPointerException
-Address is wrong
-127
-0
-0
-1
-java.lang.NullPointerException
-Address is wrong
-127
-0
-0
-1
-java.lang.NullPointerException
-Address is wrong
-Sending Packet to localhost/127.0.0.1 on 5002
+Timed out, 3 more tries...
+Timed out, 2 more tries...
+Timed out, 1 more tries...
+Timed out, 0 more tries...
+No response -- giving up.
+10
+10
 Listening for sockets
-Listening for sockets
-^CMichaels-MacBook-Pro-3:CS3251 michaelgoodell$
+night, well, many of them actually- as I sat there, working on this assignment. I routinely checked the clock.
+Was I imaging some deadline would end my suffering? It was only Tuesday and the project wasn't due until Wednesday night. No no, I knew
+my release would not come at the stroke of a clock hand. I was simply checking the time to maintain my sanity.
+
+I take a deep puff of my cigarette, smoke fills the public study space of Klaus. My fellow students around me cough, looking at me annoyed.
+
+I don't notice them. 
+
+I looked at my phone at a strand of texts that were popping up. I coldly put my phone down. I had just found out my wife was leaving me for 
+a european man named Guisseppe that she met on a vespa tour of the alps. This news was nothing compared to the mountain of emotions I was feeling
+at working on this assignment.
+
+I take another strong pull on my cigarette, and almost simultaneous sip from my glass of whisky. 
+
+"Are you ok?" A disturbed student calls out, inches from my face while still feeling like a mile away. It was then that I notice the tears streaming down my face.
+
+"Why won't it work?" 
+
+Wordlessly, the kind student places their hand on my shoulders.

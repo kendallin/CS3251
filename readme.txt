@@ -1,5 +1,5 @@
-CS 3251 Project Milestone 2
-3/16/18
+CS 3251 Project Milestone 3
+4/18/18
 
 Michael Goodell - mdgoodell3@gatech.edu
 Kendal Lin - klin78@gatech.edu
@@ -28,6 +28,8 @@ that list that start with 0. Then calculates the shortest ring and returns the i
 It then returns the permutation that has the shortest ring.
 If a negative value is passed through the array to indicate that a ringo has gone offline,
 it will recalculate the optimal ring formation without that ringo.
+
+story.txt: This is a short story that is used as the file transfer
 
 We used this algorithm to find all permutations
 https://www.geeksforgeeks.org/heaps-algorithm-for-generating-permutations/
@@ -63,19 +65,16 @@ To check the optimal ring algorithm:
 	$ javac HeapAlgo.java
 	$ java HeapAlgo
 
+To check the closest thing to a working algorithm we currently have you need to run on only 2 nodes in order to see data transfer working.
+In the working directory type:
+	$ javac *.java
+	on sender: $ java ringo S [SENDER PORT] [POC NAME] [POC PORT] 2
+	on receiver: $ java ringo R [RECEIVER PORT] [SENDER NAME] [SENDER PORT] 2
+	
+
 ISSUES:
-We ran into a lot of issues with this project and struggled to get support with it.
-Our clearest issue is that InetAddress.getByAddress() would only return null when
-trying to be placed in the neighbors constructor and store RTT vector information.
-This is necessary in order for nodes to know who the RTT came from. This issue
-turned into a critical failure we weren't able to figure out.
+We do not have accurate RTT information being passed around. Because of this our RTT matrices do not compile at individual nodes. In order to prove the existence of some functionality we have segmented the data sending process and the optimal ring formation. A file is automatically read from and sent by the sender to whoever its POC is. The POC then prints it out, proving correct reception. There is an issue with the second packet of the file getting lost due to the receiver trying to send something back that we could not resolve.
 
-The amount of time it takes for out nodes to form up is also painfully long.
-A lot of this is precautionary but this is not an optimal solution.
-
-Currently our system does not meet the requirments for the project because of
-constant issues with java class methods. We will reasess in order to deliver a
-satisfactory assignment for the last checkpoint.
 
 The HeapAlgo.java file has not been implemented in the actual communication between nodes.
 We have included test cases to show that it works with and without churn. 

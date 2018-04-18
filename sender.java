@@ -31,7 +31,6 @@ public class sender {
       byte[] data = ri.generateRTTBytes();
       bytesToSend = ri.dataHeader((byte) 0x00, 1, 1, pocName, data);
     } else {
-      System.out.println("Got some data");
       bytesToSend = ri.dataHeader((byte) 0x01, 1, 1, pocName, ri.getBitty());
 
     }
