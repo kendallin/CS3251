@@ -22,29 +22,15 @@ timeout as well as different functionality directions with input.
 Neighbors: designed to be the the holding container for all known information
 about other nodes and there reported neighbors.
 
-TSP.java:
-The TSP takes in an argument of a nested array.
-It iterates through the distances by checking the nearest neighbor and
-determining which path is the shortest. An issue that we had was creating a
-brute force algorithm with recursion. The algorithm that we decided to use, is
-using dynamic programming. This prioritizes efficiency over accuracy, so the end
-result is not always the optimal. We researched many different options and
-attempted to program our own brute force method, but could not find an algorithm that worked.
+HeapAlgo.java: This class computes the optimal ring formation of a 2D array.
+It takes a 2D array and creates a list of indices. It finds all of the permutations of
+that list that start with 0. Then calculates the shortest ring and returns the index of that permutation.
+It then returns the permutation that has the shortest ring.
+If a negative value is passed through the array to indicate that a ringo has gone offline,
+it will recalculate the optimal ring formation without that ringo.
 
-Had we not ran into this issue, we would have created a recursive function that
-calls each path from the first ringo called. Within the function it would
-recursively call all paths from each of the paths called in the first function call.
-This would eventually lead to the last ringo. In that base case, it would be
-called on the path back to the first ringo.After this, the function would recurse
-back through all of the paths, every iteration, it would add all of the paths together.
-A variable would hold the shortest path, comparing it to each new path,
-Once the function recursed all the way back to the starting ringo,
-it would return that path.
-
-Below is the source that we based our program on. It was edited to take in the
-nested array from our RTT vector instead of using a scanner to take in terminal arguments.
-
-https://www.sanfoundry.com/java-program-solve-travelling-salesman-problem-unweighted-graph/
+We used this algorithm to find all permutations
+https://www.geeksforgeeks.org/heaps-algorithm-for-generating-permutations/
 
 
 
@@ -72,6 +58,11 @@ If it gets an RTT header from a source it already has it does not restore or ret
 After another cool down period the forwarders go into long term wait and hold open
 their sockets.
 
+To check the optimal ring algorithm:
+	determine which case you would like to test (a: without churn or b: with churn)
+	$ javac HeapAlgo.java
+	$ java HeapAlgo
+
 ISSUES:
 We ran into a lot of issues with this project and struggled to get support with it.
 Our clearest issue is that InetAddress.getByAddress() would only return null when
@@ -85,3 +76,9 @@ A lot of this is precautionary but this is not an optimal solution.
 Currently our system does not meet the requirments for the project because of
 constant issues with java class methods. We will reasess in order to deliver a
 satisfactory assignment for the last checkpoint.
+
+The HeapAlgo.java file has not been implemented in the actual communication between nodes.
+We have included test cases to show that it works with and without churn. 
+Test case a: calculates the optimal ring without churn and returns the indices [0, 3, 4, 1, 2, 0]
+Test case b: calculates the optimal ring when the second ringo goes offline. 
+It returns [0, 1, 2, 3, 0], taking the second ringo completely out of the list.
